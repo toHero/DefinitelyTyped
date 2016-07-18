@@ -46,7 +46,7 @@ declare namespace FullCalendar {
         weekNumbers?: boolean;
         weekNumberCalculation?: any; // String/Function
         businessHours?: boolean | BusinessHours;
-        height?: number;
+        height?: number | string;
         contentHeight?: number;
         aspectRatio?: number;
         handleWindowResize?: boolean;
@@ -73,6 +73,7 @@ declare namespace FullCalendar {
 
         // Text/Time Customization - http://fullcalendar.io/docs/text/
 
+        lang?: string;
         timeFormat?: any; // String
         columnFormat?: any; // String
         titleFormat?: any; // String
