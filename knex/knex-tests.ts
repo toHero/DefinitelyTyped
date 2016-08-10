@@ -57,6 +57,19 @@ var knex = Knex({
   }
 });
 
+// acquireConnectionTimeout
+var knex = Knex({
+  debug: true,
+  client: 'mysql',
+  connection: {
+    socketPath     : '/path/to/socket.sock',
+    user     : 'your_database_user',
+    password : 'your_database_password',
+    database : 'myapp_test'
+  },
+  acquireConnectionTimeout: 60000,
+});
+
 // Pure Query Builder without a connection
 var knex = Knex({});
 
@@ -154,6 +167,10 @@ knex('users')
 
 knex('users')
   .join('contacts', 'users.id', 'contacts.user_id')
+  .select('users.id', 'contacts.phone');
+
+knex('users')
+  .join(knex('contacts').select('user_id', 'phone').as('contacts'), 'users.id', 'contacts.user_id')
   .select('users.id', 'contacts.phone');
 
 knex.select('*').from('users').join('accounts', function() {

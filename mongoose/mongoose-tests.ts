@@ -1,5 +1,4 @@
 /// <reference path="mongoose.d.ts" />
-/// <reference path="../bluebird/bluebird.d.ts" />
 
 import * as mongoose from 'mongoose';
 var fs = require('fs');
@@ -28,7 +27,7 @@ mongoose.connect(connectUri, {
     autoIndex: true
   },
   mongos: true
-}).then(cb);
+}).then(cb).fulfill();
 mongoose.connect(connectUri, function (error) {
   error.stack;
 });
@@ -46,7 +45,7 @@ mongoose.createConnection('localhost', 'database', 3000, {
     autoIndex: false
   }
 }).open('');
-mongoose.disconnect(cb).then(cb);
+mongoose.disconnect(cb).then(cb).fulfill;
 mongoose.get('test');
 mongoose.model('Actor', new mongoose.Schema({
   name: String
@@ -102,9 +101,15 @@ coll1.getIndexes();
 coll1.collectionName;
 coll1.conn;
 coll1.name;
-coll1.insureIndex();
+coll1.ensureIndex();
 coll1.find({});
-coll1.insert({}, {}, {});
+coll1.insert({}, {});
+
+var coll2 = new mongoose.Collection('', new mongoose.Connection(null));
+coll2.$format(999).toLowerCase();
+/* inherited properties */
+coll2.initializeOrderedBulkOp;
+coll2.indexExists;
 
 /*
  * section connection.js
@@ -128,6 +133,10 @@ conn1.openSet('mongodb://localhost/test', 'db', {
 conn1.close().catch(function (err) {});
 conn1.collection('name').$format(999);
 conn1.model('myModel', new mongoose.Schema({}), 'myCol').find();
+interface IStatics {
+  staticMethod1: (a: number) => string;
+}
+conn1.model<{}, IStatics>('').staticMethod1;
 conn1.modelNames()[0].toLowerCase();
 conn1.config.hasOwnProperty('');
 conn1.db.bufferMaxEntries;
@@ -441,7 +450,7 @@ mongooseArray.pull(5, 4, 'hi').$shift();
 mongooseArray.push([]).toFixed();
 mongooseArray.set(1, 'hi').$shift();
 mongooseArray.shift().toLowerCase();
-mongooseArray.sort(function (a: any, b: any) {
+mongooseArray.sort(function (a, b) {
   return a.length - b.length;
 }).unshift();
 mongooseArray.splice(4, 1).unshift();
@@ -862,10 +871,10 @@ schemaembedded.sparse(true);
  */
 var aggregate: mongoose.Aggregate<Object[]>;
 aggregate = mongoose.model('ex').aggregate({ $match: { age: { $gte: 21 }}});
-aggregate = new mongoose.Aggregate();
-aggregate = new mongoose.Aggregate({ $project: { a: 1, b: 1 } });
-aggregate = new mongoose.Aggregate({ $project: { a: 1, b: 1 } }, { $skip: 5 });
-aggregate = new mongoose.Aggregate([{ $project: { a: 1, b: 1 } }, { $skip: 5 }]);
+aggregate = new mongoose.Aggregate<Object[]>();
+aggregate = new mongoose.Aggregate<Object[]>({ $project: { a: 1, b: 1 } });
+aggregate = new mongoose.Aggregate<Object[]>({ $project: { a: 1, b: 1 } }, { $skip: 5 });
+aggregate = new mongoose.Aggregate<Object[]>([{ $project: { a: 1, b: 1 } }, { $skip: 5 }]);
 aggregate.addCursorFlag('flag', true).addCursorFlag('', false);
 aggregate.allowDiskUse(true).allowDiskUse(false, []);
 aggregate.append({ $project: { field: 1 }}, { $limit: 2 });
@@ -1012,6 +1021,7 @@ mongoose.model('')
     return (mongoose.model('')).findOne({}).exec();
   }).then(function (arg) {
     arg.save;
+    return 1;
   }).catch(function (err) {
     return 1;
   }).then(function (arg) {
@@ -1024,10 +1034,38 @@ mongoose.model('')
     arg.b.toFixed;
   });
 
+mongoose.model('').findOne({})
+  .then(function (arg) {
+    arg.save;
+    return 2;
+  }).then(function (num) {
+    num.toFixed;
+    return new Promise<string>((resolve, reject) => {
+      resolve('str');
+    });
+  }).then(function (str) {
+    str.toLowerCase;
+  });
+
+mongoose.model('').aggregate()
+  .then(function (arg) {
+    return 2;
+  }).then(function (num) {
+    num.toFixed;
+    return new Promise<string>((resolve, reject) => {
+      resolve('str');
+    });
+  }).then(function (str) {
+    str.toLowerCase;
+  });
+
 /* pluggable promise */
 mongoose.Promise = Promise;
 mongoose.Promise.race;
 mongoose.Promise.all;
+
+mongoose.model('').findOne()
+  .exec().addErrback(cb);
 
 /*
  * section model.js
@@ -1072,10 +1110,8 @@ MongoModel.create({
   type: 'jelly bean'
 }, {
   type: 'snickers'
-}, cb).then(function (a, b, c) {
+}, cb).then(function (a) {
   a.save();
-  b.save();
-  c.save();
 })
 MongoModel.create([{ type: 'jelly bean' }, {
   type: 'snickers'
@@ -1100,8 +1136,6 @@ MongoModel.find({ name: /john/i }, 'name friends', function (err, docs) { })
 MongoModel.find({ name: /john/i }, null, { skip: 10 })
 MongoModel.find({ name: /john/i }, null, { skip: 10 }, function (err, docs) {});
 MongoModel.find({ name: /john/i }, null, { skip: 10 }).exec(function (err, docs) {});
-MongoModel.find({ name: /john/i }, null, { skip: 10 }).exec()
-  .addBack(function (err, docs) {});
 MongoModel.findById(999, function (err, adventure) {});
 MongoModel.findById(999).exec(cb);
 MongoModel.findById(999, 'name length', function (err, adventure) {
@@ -1167,11 +1201,11 @@ MongoModel.mapReduce({
   reduce: cb
 }, function (err, results) {
   console.log(results)
-}).then(function (model, stats) {
+}).then(function (model) {
   return model.find().where('value').gt(10).exec();
 }).then(function (docs) {
    console.log(docs);
-}).then(null, cb).end();
+}).then(null, cb);
 MongoModel.findById(999, function (err, user) {
   var opts = [
       { path: 'company', match: { x: 1 }, select: 'name' }
@@ -1185,7 +1219,7 @@ MongoModel.findById(999, function (err, user) {
 MongoModel.find(999, function (err, users) {
   var opts = [{ path: 'company', match: { x: 1 }, select: 'name' }]
   var promise = MongoModel.populate(users, opts);
-  promise.then(console.log).end();
+  promise.then(console.log);
 });
 MongoModel.populate({
   name: 'Indiana Jones',
@@ -1208,6 +1242,8 @@ MongoModel.where('age').gte(21).lte(65).where('name', /^b/i);
 new (mongoModel.base.model(''))();
 mongoModel.baseModelName.toLowerCase();
 mongoModel.collection.$format(99);
+mongoModel.collection.initializeOrderedBulkOp;
+mongoModel.collection.findOne;
 mongoModel.db.openSet('');
 mongoModel.discriminators;
 mongoModel.modelName.toLowerCase();
@@ -1307,3 +1343,13 @@ LocModel.geoSearch({}, {
   near: [1, 2],
   maxDistance: 22
 }, function (err, res) { res[0].openingTimes; });
+interface IStatics {
+  staticMethod2: (a: number) => string;
+}
+var StaticModel = mongoose.model<Location, IStatics>('Location');
+StaticModel.staticMethod2(9).toUpperCase();
+(new StaticModel()).save(function (err, doc) {
+  doc.openingTimes;
+  doc.model<Location, IStatics>('').staticMethod2;
+});
+StaticModel.model<Location, IStatics>('').staticMethod2;
